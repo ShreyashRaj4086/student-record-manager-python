@@ -1,0 +1,272 @@
+"""
+╔══════════════════════════════════════════════════════════╗
+║                Student Record Manager                                		 ║
+║          Uses: Dictionaries | Functions | Loops          					 ║
+║                                                          					 ║
+╚══════════════════════════════════════════════════════════╝
+"""
+
+# Data Store
+students = {}  # { roll_no: { name, age, marks: {subject: score} } }
+
+
+# Helper Functions
+
+def calculate_average(marks):
+    """Return average score across all subjects."""
+    if not marks:
+        return 0.0
+    return sum(marks.values()) / len(marks)
+
+
+def get_grade(average):
+    """Return letter grade based on average marks."""
+    if average >= 90:
+        return "A+"
+    elif average >= 80:
+        return "A"
+    elif average >= 70:
+        return "B"
+    elif average >= 60:
+        return "C"
+    elif average >= 50:
+        return "D"
+    else:
+        return "F"
+
+
+def print_student_details(roll_no, student):
+    """Print a single student's full details."""
+    avg = calculate_average(student["marks"])
+    grade = get_grade(avg)
+
+    print(f"\n  Roll No : {roll_no}")
+    print(f"  Name    : {student['name']}")
+    print(f"  Age     : {student['age']}")
+
+    if student["marks"]:
+        print("  Marks   :")
+        for subject, score in student["marks"].items():
+            print(f"    {subject:<15} : {score}/100")
+        print(f"  Average : {avg:.1f}  |  Grade: {grade}")
+    else:
+        print("  Marks   : No subjects added yet.")
+
+
+# Core Features
+
+def add_student():
+    """Add a new student to the records."""
+    print("\n-- Add New Student --")
+
+    roll_no = input("Enter Roll No       : ").strip()
+    if not roll_no:
+        print("Roll number cannot be empty.")
+        return
+    if roll_no in students:
+        print(f"Student with Roll No '{roll_no}' already exists.")
+        return
+
+    name = input("Enter Student Name  : ").strip().title()
+    if not name:
+        print("Name cannot be empty.")
+        return
+
+    try:
+        age = int(input("Enter Age           : ").strip())
+        if not (5 <= age <= 100):
+            print("Please enter a valid age (5 to 100).")
+            return
+    except ValueError:
+        print("Age must be a number.")
+        return
+
+    marks = {}
+    print("Enter subjects and marks (type 'done' to stop):")
+
+    while True:
+        subject = input("  Subject name : ").strip().title()
+        if subject.lower() == "done":
+            break
+        if not subject:
+            print("  Subject name cannot be empty. Type 'done' to stop.")
+            continue
+        try:
+            score = int(input(f"  Marks for {subject} : ").strip())
+            if not (0 <= score <= 100):
+                print("  Marks must be between 0 and 100.")
+                continue
+            marks[subject] = score
+        except ValueError:
+            print("  Please enter a valid number.")
+
+    students[roll_no] = {"name": name, "age": age, "marks": marks}
+    print(f"\nStudent '{name}' added successfully!")
+    print_student_details(roll_no, students[roll_no])
+
+
+def search_student():
+    """Search for a student by roll number or name."""
+    print("\n-- Search Student --")
+
+    query = input("Enter Roll No or Name to search: ").strip().lower()
+    if not query:
+        print("Search query cannot be empty.")
+        return
+
+    results = []
+    for roll_no, student in students.items():
+        if query == roll_no.lower() or query in student["name"].lower():
+            results.append((roll_no, student))
+
+    if not results:
+        print(f"No student found matching '{query}'.")
+        return
+
+    print(f"\nFound {len(results)} result(s):")
+    for roll_no, student in results:
+        print_student_details(roll_no, student)
+
+
+def update_marks():
+    """Update or add marks for a student."""
+    print("\n-- Update Marks --")
+
+    roll_no = input("Enter Roll No: ").strip()
+    if roll_no not in students:
+        print(f"No student found with Roll No '{roll_no}'.")
+        return
+
+    student = students[roll_no]
+    print(f"\nUpdating marks for: {student['name']}")
+
+    if student["marks"]:
+        print("Current subjects:", ", ".join(student["marks"].keys()))
+
+    print("Enter subject and updated marks (type 'done' to stop):")
+
+    while True:
+        subject = input("  Subject name : ").strip().title()
+        if subject.lower() == "done":
+            break
+        if not subject:
+            print("  Subject name cannot be empty. Type 'done' to stop.")
+            continue
+        try:
+            score = int(input(f"  Marks for {subject} : ").strip())
+            if not (0 <= score <= 100):
+                print("  Marks must be between 0 and 100.")
+                continue
+            student["marks"][subject] = score
+            print(f"  {subject} updated to {score}.")
+        except ValueError:
+            print("  Please enter a valid number.")
+
+    print(f"\nMarks updated for '{student['name']}'!")
+    print_student_details(roll_no, student)
+
+
+def delete_student():
+    """Delete a student record after confirmation."""
+    print("\n-- Delete Student --")
+
+    roll_no = input("Enter Roll No to delete: ").strip()
+    if roll_no not in students:
+        print(f"No student found with Roll No '{roll_no}'.")
+        return
+
+    student = students[roll_no]
+    print(f"\nAbout to delete: {student['name']} (Roll No: {roll_no})")
+    confirm = input("Are you sure? (yes/no): ").strip().lower()
+
+    if confirm == "yes":
+        del students[roll_no]
+        print(f"Student '{student['name']}' deleted successfully.")
+    else:
+        print("Deletion cancelled.")
+
+
+def view_all_students():
+    """Display all students with a summary table."""
+    print("\n-- All Students --")
+
+    if not students:
+        print("No student records found. Start by adding one!")
+        return
+
+    print(f"\nTotal Students: {len(students)}\n")
+    print(f"  {'Roll No':<12} {'Name':<20} {'Age':<6} {'Average':<10} {'Grade'}")
+    print("  " + "-" * 55)
+
+    for roll_no, student in students.items():
+        avg = calculate_average(student["marks"])
+        grade = get_grade(avg)
+        avg_display = f"{avg:.1f}" if student["marks"] else "N/A"
+        grade_display = grade if student["marks"] else "N/A"
+        print(f"  {roll_no:<12} {student['name']:<20} {student['age']:<6} {avg_display:<10} {grade_display}")
+
+    print("  " + "-" * 55)
+    print("\nEnter a Roll No to see full details, or press Enter to skip:")
+    choice = input(">> ").strip()
+
+    if choice and choice in students:
+        print_student_details(choice, students[choice])
+    elif choice:
+        print(f"Roll No '{choice}' not found.")
+
+
+def load_sample_data():
+    """Pre-load sample students for quick demo/testing."""
+    sample = {
+        "R001": {"name": "Aarav Sharma", "age": 17, "marks": {"Math": 92, "Science": 88, "English": 85}},
+        "R002": {"name": "Priya Nair",   "age": 16, "marks": {"Math": 76, "Science": 80, "English": 91}},
+        "R003": {"name": "Rohit Das",    "age": 18, "marks": {"Math": 55, "Science": 60, "English": 49}},
+        "R004": {"name": "Sneha Iyer",   "age": 17, "marks": {"Math": 98, "Science": 95, "English": 97}},
+    }
+    students.update(sample)
+    print("Sample data loaded (4 students).")
+
+
+# Main Menu
+
+def display_menu():
+    print("\nStudent Record Manager")
+    print("----------------------")
+    print("1. Add Student")
+    print("2. Search Student")
+    print("3. Update Marks")
+    print("4. Delete Student")
+    print("5. View All Students")
+    print("6. Load Sample Data")
+    print("0. Exit")
+    print("----------------------")
+
+
+def main():
+    print("Welcome to Student Record Manager!")
+    print("Tip: Choose 6 to load sample data instantly.")
+
+    menu_actions = {
+        "1": add_student,
+        "2": search_student,
+        "3": update_marks,
+        "4": delete_student,
+        "5": view_all_students,
+        "6": load_sample_data,
+    }
+
+    while True:
+        display_menu()
+        choice = input("Enter your choice: ").strip()
+
+        if choice == "0":
+            print("Goodbye!")
+            break
+        elif choice in menu_actions:
+            menu_actions[choice]()
+        else:
+            print("Invalid choice. Please enter a number from 0 to 6.")
+
+
+if __name__ == "__main__":
+    main()
