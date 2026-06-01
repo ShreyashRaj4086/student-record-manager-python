@@ -1,8 +1,8 @@
 """
 ╔══════════════════════════════════════════════════════════╗
-║                Student Record Manager                                		 ║
-║          Uses: Dictionaries | Functions | Loops          					 ║
-║                                                          					 ║
+║                Student Record Manager                    ║
+║          Uses: Dictionaries | Functions | Loops          ║
+║                                                          ║
 ╚══════════════════════════════════════════════════════════╝
 """
 
